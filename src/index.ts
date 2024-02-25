@@ -118,6 +118,35 @@ app.get(
 		}
 	}
 );
+app.get(
+	"/create-test-intent",
+	async (req: express.Request, res: express.Response): Promise<void> => {
+		// Create a PaymentIntent with the order amount and currency.
+		const params: Stripe.PaymentIntentCreateParams = {
+			amount: 100,
+			currency: "EUR",
+			automatic_payment_methods: {
+				enabled: true,
+			},
+		};
+		try {
+			const paymentIntent: Stripe.PaymentIntent =
+				await stripe.paymentIntents.create(params);
+
+			// Send publishable key and PaymentIntent client_secret to client.
+			res.send({
+				clientSecret: paymentIntent.client_secret,
+				amount: 1,
+			});
+		} catch (e) {
+			res.status(400).send({
+				error: {
+					message: e.message,
+				},
+			});
+		}
+	}
+);
 
 // Expose a endpoint as a webhook handler for asynchronous events.
 // Configure your webhook in the stripe developer dashboard:
